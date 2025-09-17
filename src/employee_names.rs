@@ -6,12 +6,13 @@
 use std::collections::HashMap;
 use std::io::{self, Write};
 
+
 pub fn employee_names() {
     // Defining the HashMap that will contain all the employees {"Sales", ["Alberto", "Silvia", "Filippo"]}
     let mut database: HashMap<String, Vec<String>> = HashMap::new();
 
     loop {
-        println!("\nSelect an action from: Add, View, or Quit: ");
+        println!("\nSelect an action from: Add, View, or Quit:");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -31,7 +32,7 @@ pub fn employee_names() {
             }
 
             "quit" => {
-                quit();
+                println!("Exiting Application");
                 break;
             }
 
@@ -43,16 +44,19 @@ pub fn employee_names() {
 }
 
 fn add(map: &mut HashMap<String, Vec<String>>) {
-    println!("\nWhat's the name of the person you want to add? ");
+    println!("\nWhat's the name of the person you want to add?");
     io::stdout().flush().unwrap();
+
     let mut name = String::new();
     io::stdin().read_line(&mut name).unwrap();
     let name = name.trim().to_string();
 
-    println!("\nWhat's the department {name} is working in? ");
+    println!("\nWhat's the department {name} is working in?");
     io::stdout().flush().unwrap();
+
     let mut department = String::new();
     io::stdin().read_line(&mut department).unwrap();
+
     // Normalize to avoid “Sales” vs “sales” becoming two keys
     let department = department.trim().to_ascii_lowercase();
 
@@ -60,23 +64,58 @@ fn add(map: &mut HashMap<String, Vec<String>>) {
     map.entry(department)
         .or_default()
         .push(name);
-
-    println!("{map:?}");
 }
 
-// ---------------------------------------- MISSING ---------------------------------------------
 fn view(map: &mut HashMap<String, Vec<String>>) {
     loop {
-        println!("\nDo you want to visualize the employees in the whole Company or a Department");
-        break;
-    }
+        println!("\nSelect \"Company\" or a \"Department\" to visualize the employees. Or \"Menu\" to go back.");
+        io::stdout().flush().unwrap();
 
-    loop {
-        println!("\nWhich Department?");
-        break;
-    }
-}
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Failed to read the in-line input");
 
-fn quit() {
-    println!("Exiting Application.");
+        let command = input.trim().to_ascii_lowercase();
+
+        match command.as_str() {
+            "company" => {
+                for (department, employee_names) in &*map {
+                    // Save the employees in one single string divided by commas
+                    let employee_names_string = employee_names.join(", ");
+
+                    // Print the names of the employees
+                    println!("The people working in {} are {}", department, employee_names_string);
+                }
+            }
+
+            "department" => {
+                println!("\nWhich Department?");
+                io::stdout().flush().unwrap();
+
+                let mut input = String::new();
+                io::stdin().read_line(&mut input).expect("Failed to read the in-line input");
+
+                let department = input.trim().to_ascii_lowercase();
+
+                match map.get(department.as_str()) {
+                    Some(employee_names) => {
+                        let employee_names_string = employee_names.join(", ");
+                        println!("The people working in {} are {}", department, employee_names_string);
+                    }
+
+                    _ => {
+                        println!("Invalid command {}. Please use another command", command)
+                    }
+                }
+            }
+
+            "menu" => {
+                println!("Back to Main Menu");
+                break;
+            }
+
+            _ => {
+                println!("Invalid command {}. Please use another command", command)
+            }
+        }
+    }
 }
